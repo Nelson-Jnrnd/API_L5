@@ -6,8 +6,13 @@ var app = express();
 
 app.get('/', function(req, res) {
     if(req.query.roll) {
-        var result = parseRollQuery(req.query.roll);
-        res.send("You rolled " + req.query.roll + ":" + result);
+        var json = [];
+        json.push({
+            query: req.query.roll,
+            result: parseRollQuery(req.query.roll)
+        });
+        console.log(json);
+        res.send(json);
     } else{
         res.send("BAD REQUEST FORMAT");
     }
@@ -21,10 +26,10 @@ function parseRollQuery(query) {
     var result = 0;
     var dices = query.split('+');
     for (var i = 0; i < dices.length; i++) {
-        console.log("Param " + i + " " + dices[i]);
+        //console.log("Param " + i + " " + dices[i]);
         var diceData = dices[i].split('d');
         var nbDices = diceData[0], diceSize = diceData[1];
-        console.log("nbDices " + nbDices + " dice size " + diceSize);
+        //console.log("nbDices " + nbDices + " dice size " + diceSize);
         result += rollDice(nbDices, diceSize);
     }
     return result;
