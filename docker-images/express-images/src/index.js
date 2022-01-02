@@ -11,7 +11,7 @@ app.get('/', function(req, res) {
             query: req.query.roll,
             result: parseRollQuery(req.query.roll)
         });
-        console.log(json);
+        //console.log(json);
         res.send(json);
     } else{
         res.send("BAD REQUEST FORMAT");
