@@ -18,8 +18,8 @@ app.get('/', function(req, res) {
     }
 });
 
-app.listen(3000, function() {
-    console.log("Dice roller is waiting for requests");    
+app.listen(81, function() {
+    console.log("Dice roller is waiting for requests on port 81");    
 });
 
 function parseRollQuery(query) {

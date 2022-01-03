@@ -1,5 +1,5 @@
 FROM node:current
-
-COPY src /opt/app
-
-CMD ["node", "/opt/app/index.js"]
+WORKDIR /opt/app
+COPY src/ .
+RUN npm install
+CMD ["node", "index.js"]
