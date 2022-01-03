@@ -49,3 +49,12 @@ If the format is incorrect the app will return an error message
 If you want to add multiple dices in one request you will have to use the + sign. But since it has a semantic meaning in the query string it is required to write %2B (hexcode of +).
 
 Exemple : /?roll=2d4%2B3d10%2B1d6
+
+### Exiting the server
+Contrary to the webserver in step 1, Ctrl+C didn't kill the server at first, to implement this behavior we had to handle the SIGINT signal ourselves in the .js script.
+```js
+process.on('SIGINT', function() {
+    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+    process.exit(0);
+  });
+```

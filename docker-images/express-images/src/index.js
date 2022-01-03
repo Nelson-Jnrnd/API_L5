@@ -22,6 +22,11 @@ app.listen(81, function() {
     console.log("Dice roller is waiting for requests on port 81");    
 });
 
+process.on('SIGINT', function() {
+    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+    process.exit(0);
+  });
+
 function parseRollQuery(query) {
     var result = 0;
     var dices = query.split('+');
