@@ -1,5 +1,8 @@
 # Step 1: Static HTTP server with apache httpd
 
+## Content
+Our server displays a nice looking web page thanks to a bootsrap template that we slightly modified.
+
 ## Dockerfile
 For our php webserver we've decided to use [the official php docker image](https://hub.docker.com/_/php).
 As such, we specify the image with the FROM instruction :
@@ -20,3 +23,6 @@ At this point if we try to contact our webserver we are met with a forbidden err
 RUN chmod -R 555 ./*
 ```
 ## Apache Configuration
+The apache configuration file can be found in the container at /etc/apache2, and the main configuration file is apache2.conf
+
+For this step we did not need to do any changes to the base configuration given in this docker image.
