@@ -1,0 +1,1 @@
+docker build -t api/l5/static-http-server .
