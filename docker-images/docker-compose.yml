@@ -2,7 +2,6 @@ version: '3'
 
 services:
   reverse-proxy:
-    # The official v2 Traefik docker image
     image: traefik:v2.5
     # Enables the web UI and tells Traefik to listen to docker
     command: --api.insecure=true --providers.docker
@@ -14,8 +13,13 @@ services:
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
-  whoami:
-    # A container that exposes an API to show its IP address
-    image: traefik/whoami
+  static-http:
+    build: apache-php-image/
     labels:
-      - "traefik.http.routers.whoami.rule=Host(`localhost`)"
+      - "traefik.http.routers.static-http.rule=Host(`l5.api.ch`)"
+  dynamic-http:
+    build: express-images/
+    labels:
+      - "traefik.http.routers.dynamic-http.rule=Host(`l5.api.ch`) && Path(`/dynamic/diceRoller/`)"
+      - "traefik.http.middlewares.diceRoller.stripprefix.prefixes=/dynamic/diceRoller"
+      - "traefik.http.routers.dynamic-http.middlewares=diceRoller"
