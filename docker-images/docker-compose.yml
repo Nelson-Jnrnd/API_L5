@@ -14,9 +14,10 @@ services:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
   static-http:
-    build: apache-php-image/
+    build: ajax-jquery-images/
     labels:
       - "traefik.http.routers.static-http.rule=Host(`l5.api.ch`)"
+      - "traefik.http.services.static-http.loadBalancer.sticky.cookie.name=apil5-sticky"
   dynamic-http:
     build: express-images/
     labels:
