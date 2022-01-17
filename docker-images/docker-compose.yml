@@ -2,25 +2,28 @@ version: '3'
 
 services:
   reverse-proxy:
-    image: traefik:v2.5
-    # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker
+    image: api/l5/traefik
+    #command: --api.insecure=true 
     ports:
-      # The HTTP port
       - "80:80"
       # The Web UI (enabled by --api.insecure=true)
-      - "8080:8080"
+      #- "8080:8080"
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
   static-http:
-    build: ajax-jquery-images/
+    image: api/l5/static-http-server
     labels:
       - "traefik.http.routers.static-http.rule=Host(`l5.api.ch`)"
       - "traefik.http.services.static-http.loadBalancer.sticky.cookie.name=apil5-sticky"
+    deploy:
+      replicas: 2
   dynamic-http:
-    build: express-images/
+    image: api/l5/dynamic-http-server
     labels:
       - "traefik.http.routers.dynamic-http.rule=Host(`l5.api.ch`) && Path(`/dynamic/diceRoller/`)"
       - "traefik.http.middlewares.diceRoller.stripprefix.prefixes=/dynamic/diceRoller"
       - "traefik.http.routers.dynamic-http.middlewares=diceRoller"
+      - "traefik.http.services.dynamic-http.loadBalancer.sticky.cookie=false"
+    deploy:
+      replicas: 2

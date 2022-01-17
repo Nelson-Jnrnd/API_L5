@@ -1,1 +1,1 @@
-docker-compose up -d --scale static-http=3 --scale dynamic-http=3
+docker-compose up --scale static-http=3 --scale dynamic-http=3
