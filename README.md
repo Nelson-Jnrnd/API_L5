@@ -238,7 +238,7 @@ docker-compose up -d --scale static-http=5 --scale dynamic-http=5
 
 Run tcpdump in the reverse-proxy container to display packages going to dynamic HTTP servers instances (dynamic HTTP servers listen on port 4242)
 ```
-docker exec -it api_l5_reverse-proxy_1 tcpdump -i eth0 -n -q dst port 80
+docker exec -it api_l5_reverse-proxy_1 tcpdump -i eth0 -n -q dst port 4242
 ```
 In a web browser, access [http://l5.api.ch/](http://l5.api.ch/) and click the Roll a dice button several times to trigger requests to the dynamic server. If the load-balancing works correctly, the reverse-proxy should send each request to a different server.
 
@@ -246,7 +246,7 @@ In a web browser, access [http://l5.api.ch/](http://l5.api.ch/) and click the Ro
 
 Follow the same procedure as above, but this time inspects packages going to port 80 :
 ```
-docker exec -it api_l5_reverse-proxy_1 tcpdump -i eth0 -n -q dst port 4242
+docker exec -it api_l5_reverse-proxy_1 tcpdump -i eth0 -n -q dst port 80
 ```
 
 Then in your web browser refresh (`CTRL` `F5`) several times the web page at [http://l5.api.ch/](http://l5.api.ch/). If the load-balancing works correctly, the reverse-proxy should send each request to the same server and your browser should store a cookie named `apil5-sticky`. If you remove the cookie from your browser and reload the page, the request should be sent to a different server.
