@@ -237,7 +237,7 @@ This is done by adding this label to the static HTTP server in the docker-compos
 ```
 - "traefik.http.services.static-http.loadBalancer.sticky.cookie.name=apil5-sticky"
 ```
-This configures the load-balancer of the service associated with the static HTTP server image to use sticky-session with a cookie named `apil5-sticky`. The first time the load-balancer receives a request from a client, it will include a `set-cookie` header with an id. When the client sends new requests, the load-balancer uses this id to send them to the same server.
+This configures the load-balancer of the service associated with the static HTTP server image to use sticky-session with a cookie named `apil5-sticky`. The first time a client sends a request to the service, the load-balancer will add to the response a `set-cookie` header with an id. When the client sends new requests, the load-balancer uses this id to send them to the same server.
 
 # Validation procedure for additional steps 1,2,3
 
