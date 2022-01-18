@@ -1,1 +1,0 @@
-docker build --tag api/l5/dynamic-http-server .

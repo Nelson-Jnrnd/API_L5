@@ -151,7 +151,7 @@ $.getJSON( "/dynamic/diceRoller/?roll=1d6", function(result){
 The reason why we need the reverse proxy to have our static server request data from our express server is the Same-Origin Policy.
 It states that a script is only allowed to access data from web pages with the same origin. Simply by looking at the ajax request we can see that the reverse proxy allows us to circumvent this policy as the paths are relative.
 
-# Step 5 and additional steps 1 and 3: dynamic reverse proxy with automatic node detection and round-robin load balancing
+# Additional steps 1 and 3: dynamic reverse proxy with automatic node detection and round-robin load balancing
 
 Thanks to this step, the reverse proxy now automatically detects when new HTTP servers appear and disappear from the infrastructure, and distributes requests between the running servers.
 
@@ -184,7 +184,9 @@ CMD ["--providers.docker"]
 
 The infrastructure is described in the file `docker-compose.yml`
 
-#### Reverse proxy
+#### Traefik
+
+Traefik is run with `--providers.docker` as argument, which tells it to get its dynamic configuration from Docker.
 
 The Traefik instance has port 80 mapped to the host. It is the only entry point of the infrastructure.
 
@@ -305,27 +307,27 @@ Portainer provides a management GUI for docker. It is itself run in a docker con
 
 ### Dockerfile
 
-The files related to our portainer image are located in `docker-images/portainer`. The admin password for the web app is defined in `api-config/password`.
+The files related to our portainer image are located in `docker-images/portainer`. The admin password for the web app is defined in `docker-images/portainer/config/password`.
 
 The Dockerfile contains :
 
 ```
-COPY api-config api-config
+COPY config config
 ```
 To copy the password configuration file inside the image file system and
 
 ```
-CMD ["--admin-password-file", "api-config/password"]
+CMD ["--admin-password-file", "config/password"]
 ```
 
 To make Portainer use this file.
 
 ### Run script
 
-The script `portainer.sh` at the root of the projects builds the Portainer image, opens a browser to access the web app and runs an instance of the image. The run command is :
+The script `portainer.sh` at the root of the projects builds the Portainer image, runs an instance of the image and opens a browser to access the web app. The run command is :
 
 ```
-docker run -p 9000:9000 --name portainer --rm -v /var/run/docker.sock:/var/run/docker.sock api/l5/portainer
+docker run -d -p 9000:9000 --name portainer --rm -v /var/run/docker.sock:/var/run/docker.sock api/l5/portainer
 ```
 This maps the port used to access the web application, and mounts `/var/run/docker.sock` inside the file system of the container to allow portainer to use the docker API of the host.
 
@@ -335,15 +337,7 @@ To have a nice management page in Portainer where we can see the two HTTP server
 
 ### Modification of the docker-compose file
 
-Swarm mode uses the docker-compose file but allows additional functionalities. In swarm mode, we can set the default number of instances of an image directly in the docker-compose file by adding
-```
-deploy:
-      replicas: 2
-```
-
-to each HTTP server entry.
-
-For a reason that we don't understand, when running the infra in swarm mode it seems that Traefik fails to detect that the different dynamic HTTP server instances come from the same image. Consequently, it creates a service for each server instance, instead of creating one service and load-balancing it on the instanes.
+For a reason that we don't understand, when running the infra in swarm mode it seems that Traefik fails to detect that the different dynamic HTTP server instances come from the same image. Consequently, it creates a service for each server instance, instead of creating one service and load-balancing it on the instances.
 
 Adding this label to the dynamic HTTP server in the docker-compose file fixes the problem :
 
@@ -357,9 +351,28 @@ Although this setting is the default value, for some reason adding this line mak
 
 The script `run_infra_in_swarm_mode.sh` enables swarm mode and runs the infrastructure using the docker-compose file. It then exits swarm mode when the infrastructure is stopped.
 
-### Portainer with swarm mode
+## Validation procedure
 
 To test our final version of the infrastructure, run the script `run_infra_in_swarm_mode.sh` to run the infrastructure, and then run `portainer.sh` in an other terminal to run portainer.
+
 In the browser, enter `admin` as username and `api` as password. Then click `Get started` and select the `local` environment. On the left panel click `Stacks` and `apil5stack`.
 Here you can see each image of the infrastructure and define a new number of instances for each of them.
 
+Change the number of instances of the dynamic and the static HTTP server.  After a few seconds, the infrastructure should have the requested number of server instances (you can verify this with `docker ps`)
+
+# Step 5
+
+We skiped step 5 because it was not necessary to our infrastructure. However, in order to be sure to also get points for step 5, we propose a solution that meets the acceptance criteria of this step using Traefik.
+
+The goal of this step is to be able to manually configure the ip addresses of the HTTP servers in the reverse proxy, and be able to change this configuration without rebuilding the reverse proxy image.
+
+The files used for our solution are in the folder `step5-solution`. The file `step5-solution/config/dynamic-conf.yml` contains the Traefik configuration. The configuration is similar to the one used when running Traefik with docker compose. It tells Traefik to create a router and a service for each of the two HTTP servers, and to add a middleware for the dynamic HTTP server. The ip addresses of the two HTTP servers are written in this file.
+
+To run the Traefik reverse-proxy, go to the folder `step5-solution` and then run
+```
+docker run --name traefik --rm -d -p 80:80 -v $PWD/config:/etc/traefik/dynamic traefik --providers.file.directory /etc/traefik/dynamic
+```
+
+This mounts the `config` directory inside the container file system at tells Traefik to get its dynamic configuration from this directory.
+
+You can then run the two HTTP servers, get their IP addresses (with `docker inspect <container> | grep IPA`) and write those IP addreses in the file `config/dynamic-conf.yml`. Traefik dynamically uptades its configuration by reading this file when it is modified, and so you don't even need to restart the container to apply the config change.

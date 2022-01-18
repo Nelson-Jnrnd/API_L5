@@ -3,7 +3,7 @@ version: '3'
 services:
   reverse-proxy:
     image: api/l5/traefik
-    #command: --api.insecure=true 
+    command: --providers.docker #--api.insecure=true 
     ports:
       - "80:80"
       # The Web UI (enabled by --api.insecure=true)
@@ -17,7 +17,7 @@ services:
       - "traefik.http.routers.static-http.rule=Host(`l5.api.ch`)"
       - "traefik.http.services.static-http.loadBalancer.sticky.cookie.name=apil5-sticky"
     deploy:
-      replicas: 2
+      replicas: 5
   dynamic-http:
     image: api/l5/dynamic-http-server
     labels:
@@ -26,4 +26,4 @@ services:
       - "traefik.http.routers.dynamic-http.middlewares=diceRoller"
       - "traefik.http.services.dynamic-http.loadBalancer.sticky.cookie=false"
     deploy:
-      replicas: 2
+      replicas: 5
