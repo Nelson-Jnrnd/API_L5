@@ -170,7 +170,7 @@ Some of the key concepts of Traefik are the following :
 
 ### Traefik Dockerfile
 
-We add simply add tcpdump to the Traefik image, which is usefull to test and debug the reverse-proxy :
+We simply add tcpdump to the Traefik image, which is usefull to test and debug the reverse-proxy :
 
 ```
 RUN apk add tcpdump
