@@ -1,1 +1,0 @@
-docker run -p 8000:8000 -p 9443:9443 --name portainer --rm -v /var/run/docker.sock:/var/run/docker.sock api/l5/portainer-image
