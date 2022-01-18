@@ -1,0 +1,24 @@
+http:
+  routers:
+    static-http:
+      rule: "Host(`l5.api.ch`)"
+      service: static-http
+    dynamic-http:
+      rule: "Host(`l5.api.ch`) && Path(`/dynamic/diceRoller/`)"
+      service: dynamic-http
+      middlewares: diceRoller
+
+  middlewares:
+    diceRoller:
+      stripprefix:
+        prefixes: "/dynamic/diceRoller"
+
+  services:
+    static-http:
+      loadBalancer:
+        servers:
+        - url: "http://172.17.0.3:80"
+    dynamic-http:
+      loadBalancer:
+        servers:
+        - url: "http://172.17.0.4:4242"
