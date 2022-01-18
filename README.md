@@ -176,7 +176,6 @@ We add simply add tcpdump to the Traefik image, which is usefull to test and deb
 RUN apk add tcpdump
 ```
 
-```
 
 ### Docker-compose file and Traefik configuration
 
