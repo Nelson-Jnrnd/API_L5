@@ -57,9 +57,6 @@ And finally, we run our application.
 CMD ["node", "index.js"]
 ```
 
-### Run script
-We once again have a run.sh script to launch our container, it's the same as step one except this time we are using the port 81.
-
 ## The Node App
 The node app is a dice roller, it receive a request asking for a specific roll of dices, it will simulate it and return the result.
 
