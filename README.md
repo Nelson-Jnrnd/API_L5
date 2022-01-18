@@ -166,7 +166,7 @@ CMD ["--providers.docker"]
 
 ### Docker-compose file and Traefik configuration
 
-The infrastructure is described in the file `docker-images/docker-compose.yml`
+The infrastructure is described in the file `docker-compose.yml`
 
 #### Reverse proxy
 
