@@ -190,7 +190,7 @@ The dynamic http server image has the following labels :
 ```
 - "traefik.http.routers.dynamic-http.rule=Host(`l5.api.ch`) && Path(`/dynamic/diceRoller/`)"
 ```
-This makes the router of the dynamic HTTP server catch requests for `l5.api.ch/dynamic/diceRoller/`. Requests are tested against router rules in decreasing rule length, and consequently this rule will catch requests before the static http server router. All requets for `l5.api.ch` that don't have the specific path `/dynamic/diceRoller/` will go to the static router.
+This makes the router of the dynamic HTTP server catch requests for `l5.api.ch/dynamic/diceRoller/`. Requests are tested against router rules in decreasing rule length order, and consequently this rule will catch requests before the static http server router. All requets for `l5.api.ch` that don't have the specific path `/dynamic/diceRoller/` will go to the static router.
 
 ```
 - "traefik.http.middlewares.diceRoller.stripprefix.prefixes=/dynamic/diceRoller"
