@@ -228,6 +228,11 @@ Run the following command to stop the infrastructure :
 ```
 docker-compose down
 ```
+## Infrastructure diagram
+
+Here is a nice paint drawing of our infra :
+
+![the best drawing ever](figures/drawing.png)
 
 # Additional step 2 : Sticky session load balancing for the static HTTP server
 
@@ -356,12 +361,6 @@ In the browser, enter `admin` as username and `api` as password. Then click `Get
 Here you can see each image of the infrastructure and define a new number of instances for each of them.
 
 Change the number of instances of the dynamic and the static HTTP server.  After a few seconds, the infrastructure should have the requested number of server instances (you can verify this with `docker ps`)
-
-# Infrastructure diagram
-
-Here is a nice paint drawing of our infra :
-
-![the best drawing ever](figures/drawing.png)
 
 # Step 5
 
