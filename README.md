@@ -165,7 +165,7 @@ Traefik observes the infrastructure using the Docker API. The configuration of T
 
 Some of the key concepts of Traefik are the following :
 * Traefik associates a `router` to each image of the docker-compose file. A router determines which HTTP requests it will catch.
-* Traefik associates a `service` to each image of the docker-compose file. A service has a load balancer that distributes requests to the containers instancied by the image. The load balancer knows when new instances of the image are started and when running containers are stoped. By default, round-robin load balancing is done.
+* Traefik associates a `service` to each image of the docker-compose file. A service has a load balancer that distributes requests to the containers instancied from the image. The load balancer knows when new instances of the image are started and when running containers are stoped. By default, round-robin load balancing is done.
 * A router can optionnaly refer to a `middleware` that transforms requests before they are sent to the service and transforms responses that come frome the service.
 
 ### Traefik Dockerfile
