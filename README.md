@@ -357,6 +357,8 @@ Here you can see each image of the infrastructure and define a new number of ins
 
 Change the number of instances of the dynamic and the static HTTP server.  After a few seconds, the infrastructure should have the requested number of server instances (you can verify this with `docker ps`)
 
+# Infrastructure diagram
+
 Here is a nice paint drawing of our infra :
 
 ![the best drawing ever](figures/drawing.png)
