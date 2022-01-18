@@ -357,6 +357,10 @@ Here you can see each image of the infrastructure and define a new number of ins
 
 Change the number of instances of the dynamic and the static HTTP server.  After a few seconds, the infrastructure should have the requested number of server instances (you can verify this with `docker ps`)
 
+Here is a nice paint drawing of our infra :
+
+![the best drawing ever](figures/drawing.png)
+
 # Step 5
 
 We skiped step 5 because it was not necessary to our infrastructure. However, in order to be sure to also get points for step 5, we propose a solution that meets the acceptance criteria of this step using Traefik.
