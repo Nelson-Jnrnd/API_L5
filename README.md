@@ -135,6 +135,25 @@ docker run --name dynamic --rm -d api/l5/dynamic-http-server
 
 # Step 4: AJAX requests with JQuery
 
+## Setup
+To use JQuery we needed to import the Jquery library and for this lab we decided to use an external host. As such we linked the minified jquery 3.6 file provided by jquery.com and included it via the script tag
+
+```html
+<script src="http://code.jquery.com/jquery-3.6.0.min.js"></script>
+```
+## Jquery Script
+The script is pretty simple, we added an id to the html button and with jquery we attach a event handler function on it.
+```js
+$( "#roll" ).on( "click", function() {
+```
+The function sends a GET HTTP request to the dice roller and load the received JSON data before displaying it in a text element.
+```js
+$.getJSON( "/dynamic/diceRoller/?roll=1d6", function(result){
+```
+## Why the reverse proxy is necessary
+The reason why we need the reverse proxy to have our static server request data from our express server is the Same-Origin Policy.
+It states that a script is only allowed to access data from web pages with the same origin. Simply by looking at the ajax request we can see that the reverse proxy allows us to circumvent this policy as the paths are relative.
+
 # Step 5 and additional steps 1 and 3: dynamic reverse proxy with automatic node detection and round-robin load balancing
 
 Thanks to this step, the reverse proxy now automatically detects when new HTTP servers appear and disappear from the infrastructure, and distributes requests between the running servers.
