@@ -1,136 +1,349 @@
-# Labo HTTP Infra
+# Step 1: Static HTTP server with apache httpd
 
-## Objectives
+## Content
+Our server displays a nice looking web page thanks to a bootsrap template that we slightly modified.
 
-The first objective of this lab is to get familiar with software tools that will allow us to build a **complete web infrastructure**. By that, we mean that we will build an environment that will allow us to serve **static and dynamic content** to web browsers. To do that, we will see that the **apache httpd server** can act both as a **HTTP server** and as a **reverse proxy**. We will also see that **express.js** is a JavaScript framework that makes it very easy to write dynamic web apps.
+## Dockerfile
+For our php webserver we've decided to use [the official php docker image](https://hub.docker.com/_/php).
+As such, we specify the image with the FROM instruction :
+```docker
+FROM php:7.2-apache
+```
+We're setting the working directory to our root directory. This way, we don't need to specify the directory in future docker instructions
+```docker
+WORKDIR /var/www/html
+```
 
-The second objective is to implement a simple, yet complete, **dynamic web application**. We will create **HTML**, **CSS** and **JavaScript** assets that will be served to the browsers and presented to the users. The JavaScript code executed in the browser will issue asynchronous HTTP requests to our web infrastructure (**AJAX requests**) and fetch content generated dynamically.
+We have created a source folder for the files of our site. The COPY instruction allows us to copy those files in the root of our server within the docker-image's filesystem.
+```docker
+COPY src/ .
+```
+At this point if we try to contact our webserver we are met with a forbidden error message. To fix this issue, we execute the chmod command on the files to give read and execution rights to all the users.
+```docker
+RUN chmod -R 555 ./*
+```
+## Apache Configuration
+The apache configuration file can be found in the container at /etc/apache2, and the main configuration file is apache2.conf
 
-The third objective is to practice our usage of **Docker**. All the components of the web infrastructure will be packaged in custom Docker images (we will create at least 3 different images).
+For this step we did not need to do any changes to the base configuration given in this docker image.
 
-## General instructions
+# Step 2: Dynamic HTTP server with express.js
 
-* This is a **BIG** lab and you will need a lot of time to complete it. 
-* We have prepared webcasts for a big portion of the lab (**what can get you the "base" grade of 4.5**).
-* Be aware that the webcasts have been recorded in 2016. There is no change in the list of tasks to be done, but of course **there are some differences in the details**. For instance, the Docker images that we use to implement the solution have changed a bit and you will need to do **some adjustments to the scripts**. This is part of the work and we ask you to document what the required adaptations in your report.
-* The webcasts present one solution. Feeling adventurous and want to propose another one (for instance, by using nginx instead apache httpd, or django instead of express.js)? Go ahead, we **LOVE** that. Make sure to document your choices in the report. If you are not sure if your choice is compatible with the list of acceptance criteria? Not sure about what needs to be done to get the extra points? Reach out to the teaching team. **Learning to discuss requirements with a "customer"** (even if this one pays you with a grade and not with money) is part of the process!
-* To get **additional points**, you will need to do research in the documentation by yourself (we are here to help, but we will not give you step-by-step instructions!). To get the extra points, you will also need to be creative (do not expect complete guidelines).
-* The lab can be done in **groups of 2 students**. You will learn very important skills and tools, which you will need to next year's courses. You cannot afford to skip this content if you want to survive next year. Essentially, this means that it's a pretty bad idea to only have one person in the group doing the job...
-* Read carefully all the **acceptance criteria**.
-* We will request demos as needed. When you do your **demo**, be prepared to that you can go through the procedure quickly (there are a lot of solutions to evaluate!)
-* **You have to write a report. Please do that directly in the repo, in one or more markdown files. Start in the README.md file at the root of your directory.**
-* The report must contain the procedure that you have followed to prove that your configuration is correct (what you would do if you were doing a demo).
-* Check out the **due dates** on the main repo for the course.
+## Configuration
 
+### Dockerfile
+For this step we've decided to use [the official node docker image](https://hub.docker.com/_/node).
+As such, we specify the image with the FROM instruction :
+```docker
+FROM node:current
+```
+We're setting the working directory to our root directory. This way, we don't need to specify the directory in future docker instructions
+```docker
+WORKDIR /opt/app
+```
 
-## Step 1: Static HTTP server with apache httpd
+We have created a source folder for the files of our server. The COPY instruction allows us to copy those files in the root of our server within the docker-image's filesystem.
+```docker
+COPY src/ .
+```
 
-### Webcasts
+We then have to install the dependencies of our application. They are contained in the package.json created by npm. To do this we are using the npm install command.
+```docker
+RUN npm install
+```
 
-* [Labo HTTP (1): Serveur apache httpd "dockerisé" servant du contenu statique](https://www.youtube.com/watch?v=XFO4OmcfI3U)
+And finally, we run our application.
+```docker
+CMD ["node", "index.js"]
+```
 
-### Acceptance criteria
+### Run script
+We once again have a run.sh script to launch our container, it's the same as step one except this time we are using the port 81.
 
-* You have a GitHub repo with everything needed to build the Docker image.
-* You can do a demo, where you build the image, run a container and access content from a browser.
-* You have used a nice looking web template, different from the one shown in the webcast.
-* You are able to explain what you do in the Dockerfile.
-* You are able to show where the apache config files are located (in a running container).
-* You have **documented** your configuration in your report.
+## The Node App
+The node app is a dice roller, it receive a request asking for a specific roll of dices, it will simulate it and return the result.
 
-## Step 2: Dynamic HTTP server with express.js
+The dice size handled are : 4, 6, 8, 10, 12, 20, 30 and 100
+### Notation
+The dice notation the app uses is quite simple, it follows the following syntax : numberOfDices d sizeOfTheDice (without spaces)
 
-### Webcasts
+Exemple : 3d6
+### Request format
+The server respond to GET requests. To specify your roll you'll have to send a query string with a parameter roll.
 
-* [Labo HTTP (2a): Application node "dockerisée"](https://www.youtube.com/watch?v=fSIrZ0Mmpis)
-* [Labo HTTP (2b): Application express "dockerisée"](https://www.youtube.com/watch?v=o4qHbf_vMu0)
+Exemple : /?roll=1d10
 
-### Acceptance criteria
+If the format is incorrect the app will return an error message
 
-* You have a GitHub repo with everything needed to build the Docker image.
-* You can do a demo, where you build the image, run a container and access content from a browser.
-* You generate dynamic, random content and return a JSON payload to the client.
-* You cannot return the same content as the webcast (you cannot return a list of people).
-* You don't have to use express.js; if you want, you can use another JavaScript web framework or event another language.
-* You have **documented** your configuration in your report.
+If you want to add multiple dices in one request you will have to use the + sign. But since it has a semantic meaning in the query string it is required to write %2B (hexcode of +).
 
+Exemple : /?roll=2d4%2B3d10%2B1d6
 
-## Step 3: Reverse proxy with apache (static configuration)
+### Exiting the server
+Contrary to the webserver in step 1, Ctrl+C didn't kill the server at first, to implement this behavior we had to handle the SIGINT signal ourselves in the .js script.
+```js
+process.on('SIGINT', function() {
+    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+    process.exit(0);
+  });
+```
 
-### Webcasts
+# Step 3: Reverse proxy with apache (static configuration)
 
-* [Labo HTTP (3a): reverse proxy apache httpd dans Docker](https://www.youtube.com/watch?v=WHFlWdcvZtk)
-* [Labo HTTP (3b): reverse proxy apache httpd dans Docker](https://www.youtube.com/watch?v=fkPwHyQUiVs)
-* [Labo HTTP (3c): reverse proxy apache httpd dans Docker](https://www.youtube.com/watch?v=UmiYS_ObJxY)
+The goal is to add a reverse proxy as the entry point of our infra. All files created for this step are in `docker-images/apache-reverse-proxy`
 
+We use the docker image `php:8.1-apache`.
 
-### Acceptance criteria
+## Reverse proxy configuration
 
-* You have a GitHub repo with everything needed to build the Docker image for the container.
-* You can do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
-* You can explain and prove that the static and dynamic servers cannot be reached directly (reverse proxy is a single entry point in the infra). 
-* You are able to explain why the static configuration is fragile and needs to be improved.
-* You have **documented** your configuration in your report.
+Two configuration files are givent to apache : `000-default.conf` and `001-reverse-proxy.conf`.
 
+`000-default.conf` defines a default empty site that is used when the received request does not have a `host: l5.api.ch` header.
 
-## Step 4: AJAX requests with JQuery
+`001-reverse-proxy.conf` is used when the request does have a `host: l5.api.ch` header. This file decribes the reverse proxy rules : redirect requests for `/dynamic/diceRoller/` to `http://172.17.0.4:4242/` and redirect other requests to `http://172.17.0.3:80/`. Note that the order of the configurations is important : as the second rule is more generic it must be the last one, because otherwise it would cath all requests.
 
-### Webcasts
+## Dockerfile
 
-* [Labo HTTP (4): AJAX avec JQuery](https://www.youtube.com/watch?v=fgpNEbgdm5k)
+We copy our configuration files inside the image with
 
-### Acceptance criteria
+```
+COPY conf/ /etc/apache2
+```
 
-* You have a GitHub repo with everything needed to build the various images.
-* You can do a complete, end-to-end demonstration: the web page is dynamically updated every few seconds (with the data coming from the dynamic backend).
-* You are able to prove that AJAX requests are sent by the browser and you can show the content of th responses.
-* You are able to explain why your demo would not work without a reverse proxy (because of a security restriction).
-* You have **documented** your configuration in your report.
+and then we enable the proxy modules and apply our configuration files with
 
-## Step 5: Dynamic reverse proxy configuration
+```
+RUN a2enmod proxy proxy_http
+RuN a2ensite 000-* 001-*
+```
 
-### Webcasts
+## Running the infrastructure
 
-* [Labo HTTP (5a): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=iGl3Y27AewU)
-* [Labo HTTP (5b): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=lVWLdB3y-4I)
-* [Labo HTTP (5c): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=MQj-FzD-0mE)
-* [Labo HTTP (5d): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=B_JpYtxoO_E)
-* [Labo HTTP (5e): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=dz6GLoGou9k)
+The reverse proxy is the single entry point of our infra and has port 80 mapped to the host. For this to work, the ip address of the static HTTP server must be 172.17.0.3 and the ip address of the dynamic HTTP server must be 172.17.0.4. It is usually the case when we run first the reverse proxy, then the static server and then the dynamic server. There is no guarantee that this will always be the case, though. This means our infrastructure is fragile.
 
-### Acceptance criteria
+The infra can be run by building the images and then running
 
-* You have a GitHub repo with everything needed to build the various images.
-* You have found a way to replace the static configuration of the reverse proxy (hard-coded IP adresses) with a dynamic configuration.
-* You may use the approach presented in the webcast (environment variables and PHP script executed when the reverse proxy container is started), or you may use another approach. The requirement is that you should not have to rebuild the reverse proxy Docker image when the IP addresses of the servers change.
-* You are able to do an end-to-end demo with a well-prepared scenario. Make sure that you can demonstrate that everything works fine when the IP addresses change!
-* You are able to explain how you have implemented the solution and walk us through the configuration and the code.
-* You have **documented** your configuration in your report.
+ ```
+docker run --name reverse --rm -d -p 80:80 -p 4242:4242 api/l5/apache-reverse-proxy
+docker run --name static --rm -d api/l5/static-http-server
+docker run --name dynamic --rm -d api/l5/dynamic-http-server
+ ```
 
-## Additional steps to get extra points on top of the "base" grade
+ Only the reverse proxy has a port mapped to the host, the two HTTP servers are not directly accessible.
 
-### Load balancing: multiple server nodes (0.5pt)
+ As the reverse-proxy only forwards requests with a `host: l5.api.ch` header, in order to access the web page from a browser you need to edit your `etc/hosts` config file and add the following line : `127.0.0.1   l5.api.ch`. 
 
-* You extend the reverse proxy configuration to support **load balancing**. 
-* You show that you can have **multiple static server nodes** and **multiple dynamic server nodes**. 
-* You prove that the **load balancer** can distribute HTTP requests between these nodes.
-* You have **documented** your configuration and your validation procedure in your report.
+# Step 4: AJAX requests with JQuery
 
-### Load balancing: round-robin vs sticky sessions (0.5 pt)
+# Step 5 and additional steps 1 and 3: dynamic reverse proxy with automatic node detection and round-robin load balancing
 
-* You do a setup to demonstrate the notion of sticky session.
-* You prove that your load balancer can distribute HTTP requests in a round-robin fashion to the dynamic server nodes (because there is no state).
-* You prove that your load balancer can handle sticky sessions when forwarding HTTP requests to the static server nodes.
-* You have documented your configuration and your validation procedure in your report.
+Thanks to this step, the reverse proxy now automatically detects when new HTTP servers appear and disappear from the infrastructure, and distributes requests between the running servers.
 
-### Dynamic cluster management (0.5 pt)
+## Traefik proxy
 
-* You develop a solution, where the server nodes (static and dynamic) can appear or disappear at any time.
-* You show that the load balancer is dynamically updated to reflect the state of the cluster.
-* You describe your approach (are you implementing a discovery protocol based on UDP multicast? are you using a tool such as serf?)
-* You have documented your configuration and your validation procedure in your report.
+Our infrastructure now uses Docker compose with a Traefik container as reverse proxy.
 
-### Management UI (0.5 pt)
+### Main traefik concepts
 
-* You develop a web app (e.g. with express.js) that administrators can use to monitor and update your web infrastructure.
-* You find a way to control your Docker environment (list containers, start/stop containers, etc.) from the web app. For instance, you use the Dockerode npm module (or another Docker client library, in any of the supported languages).
-* You have documented your configuration and your validation procedure in your report.
+Traefik observes the infrastructure using the Docker API. The configuration of Traefik is dynamically influenced by the start and stop of containers, and by the `labels` associated to them. A label is a key-value pair associated to docker images and containers. We define labels for our images in the `docker-compose.yml` file.
+
+Some of the key concepts of Traefik are the following :
+* Traefik associates a `router` to each image of the docker-compose file. A router determines which HTTP requests it will catch.
+* Traefik associates a `service` to each image of the docker-compose file. A service has a load balancer that distributes requests to the containers instancied by the image. The load balancer knows when new instances of the image are started and when running containers are stoped. By default, round-robin load balancing is done.
+* A router can optionnaly refer to a `middleware` that transforms requests before they are sent to the service and transforms responses that come frome the service.
+
+### Traefik Dockerfile
+
+We add tcpdump to the Traefik image :
+
+```
+RUN apk add tcpdump
+```
+and we ask Traefik to get its dynamic configuation from Docker :
+```
+CMD ["--providers.docker"]
+```
+
+### Docker-compose file and Traefik configuration
+
+The infrastructure is described in the file `docker-images/docker-compose.yml`
+
+#### Reverse proxy
+
+The Traefik instance has port 80 mapped to the host. It is the only entry point of the infrastructure.
+
+The file `/var/run/docker.sock` of the host gives access to the Docker API. It is mapped inside the container file system, which allows Traefik to access this API.
+
+#### Static HTTP server
+
+The static http server image has the following label :
+
+```
+- "traefik.http.routers.static-http.rule=Host(`l5.api.ch`)"
+```
+This makes the routeur of the static HTTP server catch requests for `l5.api.ch`.
+
+#### Dynamic HTTP server
+
+The dynamic http server image has the following labels :
+
+```
+- "traefik.http.routers.dynamic-http.rule=Host(`l5.api.ch`) && Path(`/dynamic/diceRoller/`)"
+```
+This makes the router of the dynamic HTTP server catch requests for `l5.api.ch/dynamic/diceRoller/`. Requests are tested against router rules in decreasing rule length, and consequently this rule will catch requests before the static http server router. All requets for `l5.api.ch` that don't have the specific path `/dynamic/diceRoller/` will go to the static router.
+
+```
+- "traefik.http.middlewares.diceRoller.stripprefix.prefixes=/dynamic/diceRoller"
+- "traefik.http.routers.dynamic-http.middlewares=diceRoller"
+```
+This makes the router apply a middleware that will transform the path of the requests from `/dynamic/diceRoller/` to `/`.
+
+## Running the infrastructure
+
+Run the following command while being at the root of the project to run the infrastructure (with X and Y replaced by the desired static and dynamic HTTP servers instances numbers) :
+
+```
+docker-compose up -d --scale static-http=<X> --scale dynamic-http=<Y>
+```
+
+Running the command again with different numbers makes docker start and stop the appropriate number of containers to match the requested server counts. Traefik load balancers automatically detect the change.
+
+Run the following command to stop the infrastructure :
+
+```
+docker-compose down
+```
+
+# Additional step 2 : Sticky session load balancing for the static HTTP server
+
+Thanks to this step, the load balancing for the static HTTP servers uses sticky session, which means that subsequent requests of a client are sent to the server that received its first request.
+
+This is done by adding this label to the static HTTP server in the docker-compose file :
+```
+- "traefik.http.services.static-http.loadBalancer.sticky.cookie.name=apil5-sticky"
+```
+This configures the load-balancer of the service associated with the static HTTP server image to use sticky-session with a cookie named `apil5-sticky`. The first time the load-balancer receives a request from a client, it will include a `set-cookie` header with an id. When the client sends new requests, the load-balancer uses this id to send them to the same server.
+
+# Validation procedure for additional steps 1,2,3
+
+Follow the following procedures to control that the load-balancing works correctly :
+
+## Round-robin load-balancing
+
+Run the infrastructure using 
+
+```
+docker-compose up -d --scale static-http=5 --scale dynamic-http=5
+```
+
+Run tcpdump in the reverse-proxy container to display packages going to dynamic HTTP servers instances (dynamic HTTP servers listen on port 4242)
+```
+docker exec -it api_l5_reverse-proxy_1 tcpdump -i eth0 -n -q dst port 80
+```
+In a web browser, access [http://l5.api.ch/](http://l5.api.ch/) and click the Roll a dice button several times to trigger requests to the dynamic server. If the load-balancing works correctly, the reverse-proxy should send each request to a different server.
+
+## Sticky session load balancing
+
+Follow the same procedure as above, but this time inspects packages going to port 80 :
+```
+docker exec -it api_l5_reverse-proxy_1 tcpdump -i eth0 -n -q dst port 4242
+```
+
+Then in your web browser refresh (`CTRL` `F5`) several times the web page at [http://l5.api.ch/](http://l5.api.ch/). If the load-balancing works correctly, the reverse-proxy should send each request to the same server and your browser should store a cookie named `apil5-sticky`. If you remove the cookie from your browser and reload the page, the request should be sent to a different server.
+
+## Live scaling
+
+The goal is to verify that the reverse-proxy correctly detects new servers and removed servers.
+
+Run the infrastructure with only one instance of each server using 
+
+```
+docker-compose up -d
+```
+
+Then add new servers :
+
+```
+docker-compose up -d --scale static-http=5 --scale dynamic-http=5
+```
+
+Using the same commands as above, display packages going to dynamic HTTP servers instances on ports 80 or 4242
+
+In your browser, refresh several time the webpage after having deleted the cookie, and click several time the Roll a dice button. Requests should be sent to several different servers, which proves that the load-balancers use the new servers.
+
+Then run again
+
+```
+docker-compose up -d
+```
+
+to have only one instance of each server. Reload the webpage and click the Roll a dice button. There should be no error, which proves that the load-balancers only forward requests the remaining servers.
+
+# Additional step 4 : Management UI
+
+For this step, we use Portainer and we run our infra using Docker Swarm mode.
+
+## Portainer
+
+Portainer provides a management GUI for docker. It is itself run in a docker container that provides a web app.
+
+### Dockerfile
+
+The files related to our portainer image are located in `docker-images/portainer`. The admin password for the web app is defined in `api-config/password`.
+
+The Dockerfile contains :
+
+```
+COPY api-config api-config
+```
+To copy the password configuration file inside the image file system and
+
+```
+CMD ["--admin-password-file", "api-config/password"]
+```
+
+To make Portainer use this file.
+
+### Run script
+
+The script `portainer.sh` at the root of the projects builds the Portainer image, opens a browser to access the web app and runs an instance of the image. The run command is :
+
+```
+docker run -p 9000:9000 --name portainer --rm -v /var/run/docker.sock:/var/run/docker.sock api/l5/portainer
+```
+This maps the port used to access the web application, and mounts `/var/run/docker.sock` inside the file system of the container to allow portainer to use the docker API of the host.
+
+To have a nice management page in Portainer where we can see the two HTTP server images and set the number of instances that we want for each, we need to run the infrastructure with docker swarm mode.
+
+## Docker swarm
+
+### Modification of the docker-compose file
+
+Swarm mode uses the docker-compose file but allows additional functionalities. In swarm mode, we can set the default number of instances of an image directly in the docker-compose file by adding
+```
+deploy:
+      replicas: 2
+```
+
+to each HTTP server entry.
+
+For a reason that we don't understand, when running the infra in swarm mode it seems that Traefik fails to detect that the different dynamic HTTP server instances come from the same image. Consequently, it creates a service for each server instance, instead of creating one service and load-balancing it on the instanes.
+
+Adding this label to the dynamic HTTP server in the docker-compose file fixes the problem :
+
+```
+- "traefik.http.services.dynamic-http.loadBalancer.sticky.cookie=false"
+```
+
+Although this setting is the default value, for some reason adding this line makes Traefik create one service for all the dynamic server instances, which is what we want.
+
+### Run script
+
+The script `run_infra_in_swarm_mode.sh` enables swarm mode and runs the infrastructure using the docker-compose file. It then exits swarm mode when the infrastructure is stopped.
+
+### Portainer with swarm mode
+
+To test our final version of the infrastructure, run the script `run_infra_in_swarm_mode.sh` to run the infrastructure, and then run `portainer.sh` in an other terminal to run portainer.
+In the browser, enter `admin` as username and `api` as password. Then click `Get started` and select the `local` environment. On the left panel click `Stacks` and `apil5stack`.
+Here you can see each image of the infrastructure and define a new number of instances for each of them.
+
