@@ -273,7 +273,7 @@ The goal is to verify that the reverse-proxy correctly detects new servers and r
 Run the infrastructure with only one instance of each server using 
 
 ```
-docker-compose up -d
+docker-compose up -d --scale static-http=1 --scale dynamic-http=1
 ```
 
 Then add new servers :
@@ -289,7 +289,7 @@ In your browser, refresh several time the webpage after having deleted the cooki
 Then run again
 
 ```
-docker-compose up -d
+docker-compose up -d --scale static-http=1 --scale dynamic-http=1
 ```
 
 to have only one instance of each server. Reload the webpage and click the Roll a dice button. There should be no error, which proves that the load-balancers only forward requests the remaining servers.
